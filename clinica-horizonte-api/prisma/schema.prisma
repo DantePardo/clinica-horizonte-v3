@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  IT_ADMIN
+  ADMIN_STAFF
+  HEALTH_PROFESSIONAL
+  SECURITY_AUDITOR
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model User {
+  id            String        @id @default(uuid()) @db.Uuid
+  identityId    String        @unique
+  role          Role
+  displayName   String
+  appointments  Appointment[] @relation("DoctorAppointments")
+  records       MedicalRecord[] @relation("AttendingDoctor")
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Patient {
+  id                String          @id @default(uuid()) @db.Uuid
+  rutCiphertext     String
+  rutLookupHash     String           @unique
+  firstName         String
+  lastName          String
+  contactCiphertext String
+  appointments      Appointment[]
+  medicalRecords    MedicalRecord[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@index([lastName, firstName])
+}
+
+model Appointment {
+  id                String            @id @default(uuid()) @db.Uuid
+  patientId         String            @db.Uuid
+  doctorId          String            @db.Uuid
+  scheduledAt       DateTime
+  durationMinutes   Int
+  status            AppointmentStatus @default(SCHEDULED)
+  patient           Patient           @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  doctor            User              @relation("DoctorAppointments", fields: [doctorId], references: [id], onDelete: Restrict)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([doctorId, scheduledAt])
+  @@index([patientId, scheduledAt])
+}
+
+model MedicalRecord {
+  id                    String   @id @default(uuid()) @db.Uuid
+  patientId             String   @db.Uuid
+  attendingDoctorId     String   @db.Uuid
+  notesCiphertext       String
+  diagnosisCiphertext   String
+  patient               Patient  @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  attendingDoctor       User     @relation("AttendingDoctor", fields: [attendingDoctorId], references: [id], onDelete: Restrict)
+  createdAt             DateTime @default(now())
+
+  @@index([patientId, createdAt])
+}
+
+model AuditOutbox {
+  id          String    @id @default(uuid()) @db.Uuid
+  eventType   String
+  actorId     String?
+  occurredAt  DateTime  @default(now())
+  ipAddress   String?
+  resource    String
+  resourceId  String?
+  metadata    Json?
+  deliveredAt DateTime?
+
+  @@index([deliveredAt, occurredAt])
+}
+
+model EmergencyAccessEvent {
+  id             String   @id @default(uuid()) @db.Uuid
+  doctorIdentity String
+  patientId      String   @db.Uuid
+  justification  String
+  occurredAt     DateTime @default(now())
+  alertTriggered Boolean  @default(false)
+
+  @@index([doctorIdentity, occurredAt])
+}

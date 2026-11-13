@@ -1,0 +1,27 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Clinica Horizonte",
+  "version": "0.1.0",
+  "identifier": "org.clinicahorizonte.desktop",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Clínica Horizonte",
+        "width": 1440,
+        "height": 920,
+        "minWidth": 360,
+        "minHeight": 620
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src 'self' ipc: http://ipc.localhost http://localhost:3000 http://localhost:8080; img-src 'self' asset: data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com"
+    }
+  },
+  "bundle": { "active": true, "targets": "all" }
+}

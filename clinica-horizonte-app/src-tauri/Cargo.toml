@@ -1,0 +1,18 @@
+[package]
+name = "clinica-horizonte-app"
+version = "0.1.0"
+description = "Aplicación de escritorio de Clínica Horizonte"
+authors = ["Clínica Horizonte"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2" }
+
+[dependencies]
+hex = "0.4"
+keyring = "3"
+rand = "0.8"
+rusqlite = { version = "0.32", features = ["bundled-sqlcipher-vendored-openssl"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri = { version = "2" }

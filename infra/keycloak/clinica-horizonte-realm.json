@@ -1,0 +1,110 @@
+{
+  "realm": "clinica-horizonte",
+  "enabled": true,
+  "sslRequired": "none",
+  "loginWithEmailAllowed": false,
+  "registrationAllowed": false,
+  "resetPasswordAllowed": true,
+  "otpPolicyType": "totp",
+  "otpPolicyAlgorithm": "HmacSHA1",
+  "otpPolicyDigits": 6,
+  "otpPolicyPeriod": 30,
+  "ssoSessionIdleTimeout": 900,
+  "ssoSessionMaxLifespan": 28800,
+  "clientSessionIdleTimeout": 900,
+  "accessTokenLifespan": 300,
+  "roles": {
+    "realm": [
+      { "name": "IT_ADMIN", "description": "Administración técnica sin acceso clínico" },
+      { "name": "ADMIN_STAFF", "description": "Agenda y datos de contacto" },
+      { "name": "HEALTH_PROFESSIONAL", "description": "Atención clínica asignada" },
+      { "name": "SECURITY_AUDITOR", "description": "Lectura de trazabilidad" }
+    ]
+  },
+  "requiredActions": [
+    {
+      "alias": "CONFIGURE_TOTP",
+      "name": "Configure OTP",
+      "providerId": "CONFIGURE_TOTP",
+      "enabled": true,
+      "defaultAction": true,
+      "priority": 10,
+      "config": {}
+    }
+  ],
+  "clientScopes": [
+    {
+      "name": "api-audience",
+      "protocol": "openid-connect",
+      "attributes": { "display.on.consent.screen": "false", "include.in.token.scope": "true" },
+      "protocolMappers": [
+        {
+          "name": "clinic-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "clinica-horizonte-api",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "clinica-horizonte-app",
+      "name": "Clínica Horizonte Desktop",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["http://localhost:1420/*", "tauri://localhost/*", "http://tauri.localhost/*"],
+      "webOrigins": ["http://localhost:1420", "tauri://localhost", "http://tauri.localhost"],
+      "attributes": { "pkce.code.challenge.method": "S256" },
+      "defaultClientScopes": ["api-audience"],
+      "protocolMappers": [
+        {
+          "name": "realm-roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "false"
+          }
+        },
+        {
+          "name": "username",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "username",
+            "claim.name": "preferred_username",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "clinica-horizonte-api",
+      "name": "Clínica Horizonte API",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "bearerOnly": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false
+    }
+  ]
+}
